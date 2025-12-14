@@ -47,4 +47,4 @@ if __name__ == "__main__":
     # Method 2: Individual calculations
     print("\nIndividual calculations:")
     for i in range(n):
-        print(f"F({i}) = {fibonacci(i)}")
+        print(f"F({i}) = {fibonacci(i)}")        
