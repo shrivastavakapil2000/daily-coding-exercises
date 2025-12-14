@@ -1,5 +1,14 @@
-def fib(n):
-    return n if n <= 1 else fib(n-1) + fib(n-2)
+def fibonacci(n):
+    # Base cases: first two numbers in sequence
+    if n == 0:
+        return 0
+    if n == 1:
+        return 1
+    
+    # Recursive case: sum of previous two numbers
+    return fibonacci(n - 1) + fibonacci(n - 2)
 
-# Generate series
-print([fib(i) for i in range(10)])        
+# Test the function
+print("Fibonacci numbers:")
+for i in range(8):
+    print(f"F({i}) = {fibonacci(i)}")        
