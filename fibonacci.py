@@ -1,6 +1,7 @@
 def fibonacci(n):
+    print(f'function got called:{n}')
     # Base cases: first two numbers in sequence
-    if n == 0:
+    if n == 0:        
         return 0
     if n == 1:
         return 1
