@@ -10,27 +10,29 @@ The solution must run in O(n) time and without using division.
 Example:
 
 Input: nums = [1,2,3,4]
-
+              [1,1,2,6]
+              [6*4]
 Output: [24,12,8,6]
 '''
-
-
 def productExceptSelf(nums):
-    n = len(nums)
-    answer = [1] * n
+    answers = [1] * len(nums)
 
-    # 1) Left products
-    left_product = 1
-    for i in range(n):
-        answer[i] = left_product
-        left_product = left_product * nums[i]
-
-    # 2) Right products
-    right_product = 1
-    for i in range(n - 1, -1, -1):
-        answer[i] = answer[i] * right_product
-        right_product = right_product * nums[i]
-
-    return answer
+    # find left multiples
+    left_multiple = 1
+    for i in range(len(nums)):
+        answers[i] = left_multiple
+        left_multiple = left_multiple * nums[i]
+    
+    #left : [1,1,2,6]
+    
+    #right: [1*1,1*2,2*4,6*1]
+    right_multiple = 1
+    # find right multiples
+    for i in range(len(nums) - 1, -1, -1):
+        print(i)
+        answers[i] = answers[i] * right_multiple
+        right_multiple = right_multiple * nums[i]
+    
+    return answers
 
 print(productExceptSelf([1,2,3,4]))
