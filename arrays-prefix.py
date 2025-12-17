@@ -23,14 +23,18 @@ def productExceptSelf(nums):
         answers[i] = left_multiple
         left_multiple = left_multiple * nums[i]
     
-    #left : [1,1,2,6]
-    
-    #right: [1*1,1*2,2*4,6*1]
+    # nums : [1,2,3,4]
+    # left : [1,1,2,6]
+    # right: [1x12x2,1x3,2x4,6x1]
+    # [48,24,8,6]
     right_multiple = 1
     # find right multiples
     for i in range(len(nums) - 1, -1, -1):
         print(i)
+        print(f'answer[i]:{answers[i]}')
+        print(f'right_multiple:{right_multiple}')
         answers[i] = answers[i] * right_multiple
+        print(f'nums[i]:{nums[i]}')
         right_multiple = right_multiple * nums[i]
     
     return answers
