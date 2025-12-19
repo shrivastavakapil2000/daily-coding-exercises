@@ -10,5 +10,5 @@ print(f'output:{output}')
 
 # check if Palindrome
 val_to_check="level"
-ans = assert(val_to_check == reverse_string(val_to_check))
-print(ans)
+assert(val_to_check == reverse_string(val_to_check))
+print("Palindrome check passed!")
