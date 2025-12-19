@@ -5,4 +5,10 @@ def reverse_string(s):
     return ans
 
 output = reverse_string('Hello')
-print(f'outpiut:{output}')
+print(f'output:{output}')
+
+
+# check if Palindrome
+val_to_check="level"
+ans = assert(val_to_check == reverse_string(val_to_check))
+print(ans)
