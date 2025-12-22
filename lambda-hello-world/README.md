@@ -6,12 +6,19 @@ A simple AWS Lambda function that returns "Hello World" with CI/CD pipeline.
 
 ```
 lambda-hello-world/
-├── lambda_function.py      # Main Lambda function
-├── requirements.txt        # Python dependencies
-├── template.yaml          # SAM template for infrastructure
-├── deploy.sh              # Local deployment script
-├── .github/workflows/     # GitHub Actions CI/CD
+├── lambda_function.py          # Main Lambda function
+├── requirements.txt            # Python dependencies
+├── requirements-dev.txt        # Development dependencies
+├── template.yaml              # SAM template for infrastructure
+├── deploy.sh                  # Local deployment script
+├── test_lambda_function.py    # Unit tests
+├── test_integration.py        # Integration tests
+├── test_local.py              # Quick local test script
+├── run_tests.sh               # Test runner script
+├── pytest.ini                # Pytest configuration
+├── .github/workflows/         # GitHub Actions CI/CD
 │   └── deploy.yml
+├── .gitignore
 └── README.md
 ```
 
@@ -52,6 +59,42 @@ Add these secrets to your GitHub repository:
 ### Manual Deployment Trigger
 
 You can also trigger deployment manually from the GitHub Actions tab.
+
+## Testing
+
+### Quick Local Test
+```bash
+cd lambda-hello-world
+python test_local.py
+```
+
+### Run Full Test Suite
+```bash
+cd lambda-hello-world
+./run_tests.sh
+```
+
+### Run Specific Tests
+```bash
+# Unit tests only
+pytest test_lambda_function.py -v
+
+# Integration tests (mocked)
+pytest test_integration.py::TestLambdaIntegration -v
+
+# Tests with coverage
+pytest --cov=lambda_function --cov-report=term-missing
+```
+
+### Test Against Deployed API
+After deployment, test the live API:
+```bash
+# Set your API endpoint
+export API_ENDPOINT=https://your-api-gateway-url.execute-api.region.amazonaws.com/Prod
+
+# Run integration tests
+pytest -m integration
+```
 
 ## Testing
 

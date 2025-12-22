@@ -23,6 +23,13 @@ jobs:
         with:
           python-version: '3.9'
 
+      - name: Install dependencies and run tests
+        run: |
+          cd lambda-hello-world
+          pip install -r requirements-dev.txt
+          pytest test_lambda_function.py -v
+          pytest test_integration.py::TestLambdaIntegration -v
+
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v2
         with:
@@ -48,3 +55,27 @@ jobs:
             --region ${{ env.AWS_REGION }} \
             --no-confirm-changeset \
             --no-fail-on-empty-changeset
+      - name: Test deployed API endpoint
+        run: |
+          cd lambda-hello-world
+          # Get the API endpoint from CloudFormation stack outputs
+          API_ENDPOINT=$(aws cloudformation describe-stacks \
+            --stack-name ${{ env.STACK_NAME }} \
+            --query 'Stacks[0].Outputs[?OutputKey==`HelloWorldApi`].OutputValue' \
+            --output text \
+            --region ${{ env.AWS_REGION }})
+          
+          echo "Testing API endpoint: $API_ENDPOINT"
+          
+          # Wait a moment for the API to be ready
+          sleep 10
+          
+          # Test the endpoint
+          response=$(curl -s -o /dev/null -w "%{http_code}" "$API_ENDPOINT")
+          if [ "$response" = "200" ]; then
+            echo "✅ API endpoint test passed"
+            curl -s "$API_ENDPOINT" | jq .
+          else
+            echo "❌ API endpoint test failed with status: $response"
+            exit 1
+          fi
