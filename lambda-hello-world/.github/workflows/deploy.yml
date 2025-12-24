@@ -61,19 +61,20 @@ jobs:
           # Get the API endpoint from CloudFormation stack outputs
           API_ENDPOINT=$(aws cloudformation describe-stacks \
             --stack-name ${{ env.STACK_NAME }} \
-            --query 'Stacks[0].Outputs[?OutputKey==`HelloWorldApi`].OutputValue' \
+            --query 'Stacks[0].Outputs[?OutputKey==`DailyQuoteApi`].OutputValue' \
             --output text \
             --region ${{ env.AWS_REGION }})
           
-          echo "Testing API endpoint: $API_ENDPOINT"
+          echo "Testing Daily Quote API endpoint: $API_ENDPOINT"
           
           # Wait a moment for the API to be ready
-          sleep 10
+          sleep 15
           
           # Test the endpoint
           response=$(curl -s -o /dev/null -w "%{http_code}" "$API_ENDPOINT")
           if [ "$response" = "200" ]; then
             echo "✅ API endpoint test passed"
+            echo "📝 Sample quote response:"
             curl -s "$API_ENDPOINT" | jq .
           else
             echo "❌ API endpoint test failed with status: $response"

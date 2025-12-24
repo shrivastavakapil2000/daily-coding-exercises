@@ -1,6 +1,14 @@
-# Hello World AWS Lambda Function
+# Daily Quote AWS Lambda Function
 
-A simple AWS Lambda function that returns "Hello World" with CI/CD pipeline.
+An AWS Lambda function that generates energizing daily quotes using Amazon Bedrock AI with CI/CD pipeline.
+
+## Features
+
+- 🤖 **AI-Powered Quotes**: Uses Amazon Bedrock Titan Text Express (cost-effective model)
+- ⚡ **Energizing Content**: Generates motivational two-sentence quotes
+- 🔄 **Fallback System**: Provides backup quotes if Bedrock is unavailable
+- 🚀 **Serverless**: Fully serverless architecture with API Gateway
+- 🔧 **CI/CD Ready**: Automated testing and deployment pipeline
 
 ## Project Structure
 
@@ -89,31 +97,29 @@ pytest --cov=lambda_function --cov-report=term-missing
 ### Test Against Deployed API
 After deployment, test the live API:
 ```bash
-# Set your API endpoint
-export API_ENDPOINT=https://your-api-gateway-url.execute-api.region.amazonaws.com/Prod
-
-# Run integration tests
-pytest -m integration
-```
-
-## Testing
-
-Once deployed, you'll get an API Gateway URL. Test it with:
-
-```bash
-curl https://your-api-gateway-url/Prod/hello/
+# Test directly with curl
+curl https://your-api-gateway-url.execute-api.region.amazonaws.com/Prod/quote/
 ```
 
 Expected response:
 ```json
 {
-  "message": "Hello World"
+  "quote": "Today is your day to shine and make a difference! Embrace every challenge as an opportunity to grow stronger.",
+  "timestamp": "request-id-12345",
+  "model": "amazon.titan-text-express-v1"
 }
 ```
 
 ## AWS Resources Created
 
-- Lambda Function
+- Lambda Function with Bedrock permissions
 - API Gateway REST API
-- IAM Role for Lambda execution
+- IAM Role for Lambda execution with Bedrock access
 - CloudFormation Stack
+
+## Important Notes
+
+- **Bedrock Access**: Ensure your AWS account has access to Amazon Bedrock in your deployment region
+- **Model Availability**: The function uses `amazon.titan-text-express-v1` (most cost-effective)
+- **Fallback Quotes**: Built-in fallback system provides quotes even if Bedrock is unavailable
+- **Cost Optimization**: Uses the cheapest Bedrock model with minimal token usage
