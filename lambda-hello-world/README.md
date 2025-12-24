@@ -117,6 +117,23 @@ Expected response:
 - IAM Role for Lambda execution with Bedrock access
 - CloudFormation Stack
 
+## Deployment Status
+
+✅ **Successfully Deployed!**
+
+**Live API Endpoint:** https://clx8580ut5.execute-api.us-east-1.amazonaws.com/Prod/quote/
+
+**Test the API:**
+```bash
+curl https://clx8580ut5.execute-api.us-east-1.amazonaws.com/Prod/quote/
+```
+
+**Quick Test Script:**
+```bash
+cd lambda-hello-world
+./test_deployed_api.sh
+```
+
 ## Important Notes
 
 - **Bedrock Access**: Ensure your AWS account has access to Amazon Bedrock in your deployment region
