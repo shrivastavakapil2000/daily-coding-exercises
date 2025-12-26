@@ -15,65 +15,80 @@ def get_energizing_quote(name=None):
     Generate an energizing daily quote using Amazon Bedrock
     Uses Titan Text Express (cheapest model)
     """
-    try:
-        # Create personalized prompt based on whether name is provided
-        if name and name.strip():
-            prompt = f"""Generate a personalized energizing daily quote for {name.strip()}. 
-            The quote should be exactly two sentences long, motivational, and inspiring.
-            Address {name.strip()} directly in the quote to make it personal and uplifting.
-            Focus on positivity, growth, and achievement.
+    import time
+    import random
+    
+    max_retries = 1
+    base_delay = 1
+    
+    for attempt in range(max_retries):
+        try:
+            # Create personalized prompt based on whether name is provided
+            if name and name.strip():
+                prompt = f"""Generate a personalized energizing daily quote for {name.strip()}. 
+                The quote should be exactly two sentences long, motivational, and inspiring.
+                Address {name.strip()} directly in the quote to make it personal and uplifting.
+                Focus on positivity, growth, and achievement.
+                
+                Personalized Quote for {name.strip()}:"""
+            else:
+                prompt = """Generate an energizing daily quote that motivates and inspires. 
+                The quote should be exactly two sentences long and focus on positivity, growth, or achievement.
+                Make it uplifting and powerful.
+                
+                Quote:"""
             
-            Personalized Quote for {name.strip()}:"""
-        else:
-            prompt = """Generate an energizing daily quote that motivates and inspires. 
-            The quote should be exactly two sentences long and focus on positivity, growth, or achievement.
-            Make it uplifting and powerful.
-            
-            Quote:"""
-        
-        # Request body for Titan Text Express
-        request_body = {
-            "inputText": prompt,
-            "textGenerationConfig": {
-                "maxTokenCount": 100,
-                "temperature": 0.7,
-                "topP": 0.9,
-                "stopSequences": ["\n\n"]
+            # Request body for Amazon Titan Text Express
+            request_body = {
+                "inputText": prompt,
+                "textGenerationConfig": {
+                    "maxTokenCount": 100,
+                    "temperature": 0.7,
+                    "topP": 0.9,
+                    "stopSequences": ["\n\n"]
+                }
             }
-        }
-        
-        # Call Bedrock with Titan Text Express (cheapest model)
-        response = bedrock_client.invoke_model(
-            modelId='amazon.titan-text-express-v1',
-            body=json.dumps(request_body),
-            contentType='application/json'
-        )
-        
-        # Parse response
-        response_body = json.loads(response['body'].read())
-        quote = response_body['results'][0]['outputText'].strip()
-        
-        # Clean up the quote (remove any extra formatting)
-        quote = quote.replace('Quote:', '').replace(f'Personalized Quote for {name.strip() if name else ""}:', '').strip()
-        
-        logger.info(f"Generated quote for {name or 'anonymous'}: {quote}")
-        return quote
-        
-    except ClientError as e:
-        logger.error(f"Bedrock API error: {str(e)}")
-        # Personalized fallback quote if Bedrock fails
-        if name and name.strip():
-            return f"Hey {name.strip()}, every new day is a chance to transform your dreams into reality! Embrace the possibilities and make today extraordinary."
-        else:
-            return "Every new day is a chance to transform your dreams into reality. Embrace the possibilities and make today extraordinary!"
-        
-    except Exception as e:
-        logger.error(f"Unexpected error: {str(e)}")
-        # Personalized fallback quote for any other errors
-        if name and name.strip():
-            return f"{name.strip()}, success is not final, failure is not fatal: it is the courage to continue that counts! Today is your day to shine."
-        else:
-            return "Success is not final, failure is not fatal: it is the courage to continue that counts. Today is your day to shine!"
+            
+            # Call Bedrock with Titan Text Express (original model)
+            response = bedrock_client.invoke_model(
+                modelId='amazon.titan-text-express-v1',
+                body=json.dumps(request_body),
+                contentType='application/json'
+            )
+            
+            # Parse response (Titan format)
+            response_body = json.loads(response['body'].read())
+            quote = response_body['results'][0]['outputText'].strip()
+            
+            # Clean up the quote (remove any extra formatting)
+            quote = quote.replace('Quote:', '').replace(f'Personalized Quote for {name.strip() if name else ""}:', '').strip()
+            
+            logger.info(f"Generated quote for {name or 'anonymous'}")
+            return quote
+            
+        except ClientError as e:
+            error_code = e.response.get('Error', {}).get('Code', '')
+            
+            if error_code == 'ThrottlingException' and attempt < max_retries - 1:
+                # Exponential backoff with jitter
+                delay = base_delay * (2 ** attempt) + random.uniform(0, 1)
+                logger.warning(f"Bedrock throttling, retrying in {delay:.2f} seconds (attempt {attempt + 1}/{max_retries})")
+                time.sleep(delay)
+                continue
+            else:
+                logger.error(f"Bedrock API error: {str(e)}")
+                break
+                
+        except Exception as e:
+            logger.error(f"Unexpected error: {str(e)}")
+            break
+    
+    # Fallback quotes if all retries failed
+    logger.info("Using fallback quote due to API issues")
+    if name and name.strip():
+        return f"Hey {name.strip()}, every new day is a chance to transform your dreams into reality! Embrace the possibilities and make today extraordinary."
+    else:
+        return "Every new day is a chance to transform your dreams into reality. Embrace the possibilities and make today extraordinary!"
 
 def lambda_handler(event, context):
     """
@@ -81,6 +96,9 @@ def lambda_handler(event, context):
     Supports personalization via name parameter
     """
     try:
+        # Log the incoming event for debugging
+        logger.info(f"Received event: {json.dumps(event)}")
+        
         # Handle OPTIONS request for CORS preflight
         if event.get('httpMethod') == 'OPTIONS':
             return {
@@ -100,21 +118,29 @@ def lambda_handler(event, context):
         # Check query string parameters
         if event.get('queryStringParameters'):
             name = event['queryStringParameters'].get('name')
+            logger.info(f"Name from query parameters: {name}")
         
         # Check POST body if no query parameter
         if not name and event.get('body'):
             try:
                 body = json.loads(event['body'])
                 name = body.get('name')
+                logger.info(f"Name from POST body: {name}")
             except (json.JSONDecodeError, TypeError):
+                logger.info("No valid JSON body found")
                 pass
         
         # Sanitize name input to prevent prompt injection
         if name:
+            original_name = name
             name = sanitize_name_input(name)
+            logger.info(f"Name after sanitization: '{original_name}' -> '{name}'")
+        else:
+            logger.info("No name parameter found")
         
         # Generate the daily quote (personalized or generic)
         daily_quote = get_energizing_quote(name)
+        logger.info(f"Generated quote for name '{name}'")
         
         return {
             'statusCode': 200,

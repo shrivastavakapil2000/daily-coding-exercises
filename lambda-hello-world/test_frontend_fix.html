@@ -8,6 +8,7 @@
         .success { color: green; }
         .error { color: red; }
         .info { color: blue; }
+        .debug { background: #f5f5f5; padding: 10px; margin: 10px 0; }
     </style>
 </head>
 <body>
@@ -28,6 +29,12 @@
         <input type="text" id="test-input" value="5439300655350779" placeholder="Enter username">
         <button onclick="testFrontendFlow()">Test Frontend Flow</button>
         <div id="frontend-result"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>Test 4: Network Request Details</h2>
+        <button onclick="testNetworkDetails()">Test with Network Logging</button>
+        <div id="network-result"></div>
     </div>
     
     <script>
@@ -71,6 +78,11 @@
                     <p class="success">✅ API Call Success!</p>
                     <p><strong>Quote:</strong> ${data.quote}</p>
                     <p><strong>Personalized:</strong> ${data.personalized}</p>
+                    <p><strong>Debug Name:</strong> ${data.debug_name || 'Not provided'}</p>
+                    <div class="debug">
+                        <strong>Full Response:</strong><br>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>
+                    </div>
                 `;
                 
             } catch (error) {
@@ -100,6 +112,8 @@
                 const url = new URL('https://clx8580ut5.execute-api.us-east-1.amazonaws.com/Prod/quote/');
                 url.searchParams.append('name', name);
                 
+                console.log('Making request to:', url.toString());
+                
                 const response = await fetch(url.toString(), {
                     method: 'GET',
                     headers: {
@@ -121,12 +135,85 @@
                     <p class="success">✅ Frontend Flow Success!</p>
                     <p><strong>Quote:</strong> ${data.quote}</p>
                     <p><strong>Personalized:</strong> ${data.personalized}</p>
+                    <p><strong>Debug Name:</strong> ${data.debug_name || 'Not provided'}</p>
+                    <div class="debug">
+                        <strong>Request URL:</strong> ${url.toString()}<br>
+                        <strong>Full Response:</strong><br>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>
+                    </div>
                 `;
                 
             } catch (error) {
                 console.error('Frontend Flow Error:', error);
                 resultDiv.innerHTML = `
                     <p class="error">❌ Frontend Flow Error: ${error.message}</p>
+                `;
+            }
+        }
+        
+        // Test 4: Network request details
+        async function testNetworkDetails() {
+            const resultDiv = document.getElementById('network-result');
+            const name = "5439300655350779";
+            
+            try {
+                resultDiv.innerHTML = '<p class="info">Testing with detailed network logging...</p>';
+                
+                // Create request exactly like the main frontend
+                const CONFIG = {
+                    API_ENDPOINT: 'https://clx8580ut5.execute-api.us-east-1.amazonaws.com/Prod/quote/',
+                    REQUEST_TIMEOUT: 30000
+                };
+                
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), CONFIG.REQUEST_TIMEOUT);
+                
+                const url = new URL(CONFIG.API_ENDPOINT);
+                url.searchParams.append('name', name);
+                
+                console.log('=== REQUEST DETAILS ===');
+                console.log('URL:', url.toString());
+                console.log('Method: GET');
+                console.log('Headers: Content-Type: application/json');
+                
+                const response = await fetch(url.toString(), {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    signal: controller.signal
+                });
+                
+                clearTimeout(timeoutId);
+                
+                console.log('=== RESPONSE DETAILS ===');
+                console.log('Status:', response.status);
+                console.log('Headers:', [...response.headers.entries()]);
+                
+                if (!response.ok) {
+                    throw new Error(`Server error: ${response.status} ${response.statusText}`);
+                }
+                
+                const data = await response.json();
+                console.log('Response data:', data);
+                
+                resultDiv.innerHTML = `
+                    <p class="success">✅ Network Test Success!</p>
+                    <div class="debug">
+                        <strong>Request URL:</strong> ${url.toString()}<br>
+                        <strong>Response Status:</strong> ${response.status}<br>
+                        <strong>Quote:</strong> ${data.quote}<br>
+                        <strong>Personalized:</strong> ${data.personalized}<br>
+                        <strong>Debug Name:</strong> ${data.debug_name || 'Not provided'}<br>
+                        <strong>Full Response:</strong><br>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>
+                    </div>
+                `;
+                
+            } catch (error) {
+                console.error('Network Test Error:', error);
+                resultDiv.innerHTML = `
+                    <p class="error">❌ Network Test Error: ${error.message}</p>
                 `;
             }
         }
