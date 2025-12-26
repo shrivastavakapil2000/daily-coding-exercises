@@ -81,6 +81,19 @@ def lambda_handler(event, context):
     Supports personalization via name parameter
     """
     try:
+        # Handle OPTIONS request for CORS preflight
+        if event.get('httpMethod') == 'OPTIONS':
+            return {
+                'statusCode': 200,
+                'headers': {
+                    'Access-Control-Allow-Origin': '*',
+                    'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+                    'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Amz-Date, X-Api-Key, X-Amz-Security-Token',
+                    'Access-Control-Max-Age': '600'
+                },
+                'body': ''
+            }
+        
         # Extract name from query parameters or POST body
         name = None
         
@@ -109,7 +122,7 @@ def lambda_handler(event, context):
                 'Content-Type': 'application/json',
                 'Access-Control-Allow-Origin': '*',
                 'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-                'Access-Control-Allow-Headers': 'Content-Type, Authorization'
+                'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Amz-Date, X-Api-Key, X-Amz-Security-Token'
             },
             'body': json.dumps({
                 'quote': daily_quote,

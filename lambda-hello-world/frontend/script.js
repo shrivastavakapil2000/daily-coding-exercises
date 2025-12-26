@@ -145,9 +145,9 @@ function validateNameInput() {
     }
 
     // Check for valid characters (basic validation)
-    const nameRegex = /^[a-zA-Z\s\-'\.]+$/;
+    const nameRegex = /^[a-zA-Z0-9\s\-'\.]+$/;
     if (!nameRegex.test(name)) {
-        showInputError('Please use only letters, spaces, hyphens, and apostrophes');
+        showInputError('Please use only letters, numbers, spaces, hyphens, and apostrophes');
         return false;
     }
 

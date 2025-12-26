@@ -30,11 +30,24 @@ Resources:
           Properties:
             Path: /quote
             Method: get
+            RestApiId: !Ref ApiGatewayApi
         HelloWorldApiPost:
           Type: Api
           Properties:
             Path: /quote
             Method: post
+            RestApiId: !Ref ApiGatewayApi
+
+  # API Gateway with CORS
+  ApiGatewayApi:
+    Type: AWS::Serverless::Api
+    Properties:
+      StageName: Prod
+      Cors:
+        AllowMethods: "'GET,POST,OPTIONS'"
+        AllowHeaders: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+        AllowOrigin: "'*'"
+        MaxAge: "'600'"
 
   # S3 Bucket for Frontend Hosting
   FrontendBucket:
