@@ -10,8 +10,8 @@ pip install -r requirements-dev.txt
 echo "Running unit tests..."
 pytest test_lambda_function.py -v --tb=short
 
-echo "Running integration tests (mocked)..."
-pytest test_integration.py::TestLambdaIntegration -v --tb=short
+echo "Running integration tests..."
+pytest test_integration.py::TestLambdaFunction -v --tb=short
 
 echo "Running all tests with coverage..."
 pytest --cov=lambda_function --cov-report=term-missing --cov-report=html

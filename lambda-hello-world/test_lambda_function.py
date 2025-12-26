@@ -140,13 +140,10 @@ class TestLambdaFunction:
         assert len(body['quote']) > 0
         assert "Every new day" in body['quote'] or "Success is not final" in body['quote']
     
-    @patch('boto3.client')
-    def test_get_energizing_quote_direct(self, mock_boto_client):
+    @patch('lambda_function.bedrock_client')
+    def test_get_energizing_quote_direct(self, mock_bedrock):
         """Test the get_energizing_quote function directly"""
-        # Mock Bedrock client
-        mock_bedrock = MagicMock()
-        mock_boto_client.return_value = mock_bedrock
-        
+        # Mock Bedrock response
         mock_response = {
             'body': MagicMock()
         }

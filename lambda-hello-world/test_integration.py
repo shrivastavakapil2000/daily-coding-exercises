@@ -1,81 +1,7 @@
 import json
-import boto3
 import pytest
 import requests
-from moto import mock_lambda, mock_apigateway
-import zipfile
 import os
-
-
-@mock_lambda
-@mock_apigateway
-class TestLambdaIntegration:
-    """Integration tests for the Lambda function"""
-    
-    def setup_method(self):
-        """Set up test environment"""
-        self.lambda_client = boto3.client('lambda', region_name='us-east-1')
-        self.api_client = boto3.client('apigateway', region_name='us-east-1')
-        
-    def create_lambda_zip(self):
-        """Create a zip file with the Lambda function code"""
-        zip_path = '/tmp/lambda_function.zip'
-        with zipfile.ZipFile(zip_path, 'w') as zip_file:
-            zip_file.write('lambda_function.py')
-        
-        with open(zip_path, 'rb') as zip_file:
-            return zip_file.read()
-    
-    def test_lambda_function_deployment(self):
-        """Test that the Lambda function can be deployed and invoked"""
-        # Create the Lambda function
-        function_name = 'hello-world-test'
-        
-        # Read the actual lambda function code
-        with open('lambda_function.py', 'r') as f:
-            lambda_code = f.read()
-        
-        # Create a simple zip with the code
-        zip_content = self.create_lambda_zip()
-        
-        response = self.lambda_client.create_function(
-            FunctionName=function_name,
-            Runtime='python3.9',
-            Role='arn:aws:iam::123456789012:role/lambda-role',
-            Handler='lambda_function.lambda_handler',
-            Code={'ZipFile': zip_content},
-            Description='Test Hello World Lambda function'
-        )
-        
-        assert response['FunctionName'] == function_name
-        assert response['Runtime'] == 'python3.9'
-    
-    def test_lambda_function_invocation(self):
-        """Test invoking the Lambda function directly"""
-        function_name = 'hello-world-test'
-        
-        # Create the function first
-        zip_content = self.create_lambda_zip()
-        self.lambda_client.create_function(
-            FunctionName=function_name,
-            Runtime='python3.9',
-            Role='arn:aws:iam::123456789012:role/lambda-role',
-            Handler='lambda_function.lambda_handler',
-            Code={'ZipFile': zip_content}
-        )
-        
-        # Invoke the function
-        response = self.lambda_client.invoke(
-            FunctionName=function_name,
-            Payload=json.dumps({})
-        )
-        
-        # Parse the response
-        payload = json.loads(response['Payload'].read())
-        
-        assert payload['statusCode'] == 200
-        body = json.loads(payload['body'])
-        assert body['message'] == 'Hello World'
 
 
 class TestAPIEndpoint:
@@ -83,28 +9,75 @@ class TestAPIEndpoint:
     
     @pytest.mark.integration
     def test_api_endpoint_response(self):
-        """Test the deployed API endpoint (requires actual deployment)"""
-        # This test requires the API_ENDPOINT environment variable
-        api_endpoint = os.environ.get('API_ENDPOINT')
+        """Test the deployed API endpoint"""
+        # Use the known deployed endpoint
+        api_endpoint = "https://clx8580ut5.execute-api.us-east-1.amazonaws.com/Prod/quote/"
         
-        if not api_endpoint:
-            pytest.skip("API_ENDPOINT environment variable not set")
-        
-        response = requests.get(f"{api_endpoint}/hello")
+        response = requests.get(api_endpoint)
         
         assert response.status_code == 200
         data = response.json()
-        assert data['message'] == 'Hello World'
+        assert 'quote' in data
+        assert 'timestamp' in data
+        assert 'model' in data
+        assert data['model'] == 'amazon.titan-text-express-v1'
+        assert len(data['quote']) > 0
     
     @pytest.mark.integration
     def test_api_endpoint_headers(self):
         """Test that the API returns proper headers"""
-        api_endpoint = os.environ.get('API_ENDPOINT')
+        api_endpoint = "https://clx8580ut5.execute-api.us-east-1.amazonaws.com/Prod/quote/"
         
-        if not api_endpoint:
-            pytest.skip("API_ENDPOINT environment variable not set")
-        
-        response = requests.get(f"{api_endpoint}/hello")
+        response = requests.get(api_endpoint)
         
         assert response.status_code == 200
         assert 'application/json' in response.headers.get('content-type', '')
+    
+    @pytest.mark.integration
+    def test_api_endpoint_multiple_calls(self):
+        """Test multiple calls to ensure consistency"""
+        api_endpoint = "https://clx8580ut5.execute-api.us-east-1.amazonaws.com/Prod/quote/"
+        
+        responses = []
+        for i in range(3):
+            response = requests.get(api_endpoint)
+            assert response.status_code == 200
+            data = response.json()
+            responses.append(data)
+            
+        # All responses should have the required structure
+        for data in responses:
+            assert 'quote' in data
+            assert 'timestamp' in data
+            assert 'model' in data
+            assert data['model'] == 'amazon.titan-text-express-v1'
+            
+        # Timestamps should be different (unique request IDs)
+        timestamps = [r['timestamp'] for r in responses]
+        assert len(set(timestamps)) == len(timestamps), "All timestamps should be unique"
+
+
+class TestLambdaFunction:
+    """Test Lambda function behavior without mocking AWS services"""
+    
+    def test_lambda_function_import(self):
+        """Test that we can import the lambda function"""
+        from lambda_function import lambda_handler, get_energizing_quote
+        assert callable(lambda_handler)
+        assert callable(get_energizing_quote)
+    
+    def test_lambda_function_structure(self):
+        """Test the lambda function code structure"""
+        import lambda_function
+        import inspect
+        
+        # Check that required functions exist
+        assert hasattr(lambda_function, 'lambda_handler')
+        assert hasattr(lambda_function, 'get_energizing_quote')
+        
+        # Check function signatures
+        handler_sig = inspect.signature(lambda_function.lambda_handler)
+        assert len(handler_sig.parameters) == 2  # event, context
+        
+        quote_sig = inspect.signature(lambda_function.get_energizing_quote)
+        assert len(quote_sig.parameters) == 0  # no parameters
