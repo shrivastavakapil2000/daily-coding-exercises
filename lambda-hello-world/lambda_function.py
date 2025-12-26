@@ -38,27 +38,36 @@ def get_energizing_quote(name=None):
                 
                 Quote:"""
             
-            # Request body for Amazon Titan Text Express
+            # Request body for Amazon Nova 2 Lite
             request_body = {
-                "inputText": prompt,
-                "textGenerationConfig": {
-                    "maxTokenCount": 100,
+                "messages": [
+                    {
+                        "role": "user",
+                        "content": [
+                            {
+                                "text": prompt
+                            }
+                        ]
+                    }
+                ],
+                "inferenceConfig": {
+                    "max_new_tokens": 100,
                     "temperature": 0.7,
-                    "topP": 0.9,
-                    "stopSequences": ["\n\n"]
+                    "top_p": 0.9,
+                    "stop_sequences": ["\n\n"]
                 }
             }
             
-            # Call Bedrock with Titan Text Express (original model)
+            # Call Bedrock with Amazon Nova 2 Lite inference profile (newest model)
             response = bedrock_client.invoke_model(
-                modelId='amazon.titan-text-express-v1',
+                modelId='us.amazon.nova-2-lite-v1:0',
                 body=json.dumps(request_body),
                 contentType='application/json'
             )
             
-            # Parse response (Titan format)
+            # Parse response (Nova 2 format)
             response_body = json.loads(response['body'].read())
-            quote = response_body['results'][0]['outputText'].strip()
+            quote = response_body['output']['message']['content'][0]['text'].strip()
             
             # Clean up the quote (remove any extra formatting)
             quote = quote.replace('Quote:', '').replace(f'Personalized Quote for {name.strip() if name else ""}:', '').strip()
@@ -153,7 +162,7 @@ def lambda_handler(event, context):
             'body': json.dumps({
                 'quote': daily_quote,
                 'timestamp': context.aws_request_id if context else 'local-test',
-                'model': 'amazon.titan-text-express-v1',
+                'model': 'us.amazon.nova-2-lite-v1:0',
                 'personalized': bool(name and name.strip())
             })
         }
