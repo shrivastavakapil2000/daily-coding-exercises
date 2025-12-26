@@ -80,4 +80,4 @@ class TestLambdaFunction:
         assert len(handler_sig.parameters) == 2  # event, context
         
         quote_sig = inspect.signature(lambda_function.get_energizing_quote)
-        assert len(quote_sig.parameters) == 0  # no parameters
+        assert len(quote_sig.parameters) == 1  # name parameter (optional)

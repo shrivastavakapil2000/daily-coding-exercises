@@ -82,13 +82,13 @@ Implementation of a minimalistic web frontend for personalized daily quotes usin
   - Include website endpoint URL display
   - _Requirements: 6.1, 6.3_
 
-- [-] 8. Checkpoint - Test Backend Enhancements
+- [x] 8. Checkpoint - Test Backend Enhancements
   - Ensure all tests pass for Lambda function updates
   - Test API with name parameters using curl/Postman
   - Verify CORS headers are properly configured
   - Ensure all tests pass, ask the user if questions arise.
 
-- [ ] 9. Deploy and Test Complete System
+- [x] 9. Deploy and Test Complete System
   - Deploy enhanced Lambda function using SAM
   - Create and configure S3 bucket for static hosting
   - Upload frontend files to S3 bucket
@@ -100,14 +100,14 @@ Implementation of a minimalistic web frontend for personalized daily quotes usin
   - Test error scenarios and recovery paths
   - _Requirements: 2.2, 2.3, 2.4_
 
-- [ ] 10. Update Documentation
+- [x] 10. Update Documentation
   - Update main README.md with frontend information
   - Add frontend URL and usage instructions
   - Document deployment process for both backend and frontend
   - Include troubleshooting guide
   - _Requirements: 6.5_
 
-- [ ] 11. Final Checkpoint - End-to-End Validation
+- [x] 11. Final Checkpoint - End-to-End Validation
   - Test personalized quote generation with various names
   - Verify responsive design on different devices
   - Test error handling scenarios

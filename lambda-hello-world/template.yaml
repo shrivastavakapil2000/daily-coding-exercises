@@ -40,7 +40,6 @@ Resources:
   FrontendBucket:
     Type: AWS::S3::Bucket
     Properties:
-      BucketName: !Sub 'daily-quote-frontend-${AWS::AccountId}-${AWS::Region}'
       PublicAccessBlockConfiguration:
         BlockPublicAcls: false
         BlockPublicPolicy: false
@@ -63,6 +62,7 @@ Resources:
   # S3 Bucket Policy for Public Read Access
   FrontendBucketPolicy:
     Type: AWS::S3::BucketPolicy
+    DependsOn: FrontendBucket
     Properties:
       Bucket: !Ref FrontendBucket
       PolicyDocument:
