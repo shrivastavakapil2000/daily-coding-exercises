@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Get personalized daily quotes powered by AI to inspire and motivate you">
+    <meta name="keywords" content="daily quotes, motivation, inspiration, AI, personalized">
+    <meta name="author" content="Daily Quote Generator">
+    
+    <!-- Open Graph / Social Media -->
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="Personalized Daily Quotes - AI-Powered Inspiration">
+    <meta property="og:description" content="Get personalized daily quotes powered by AI to inspire and motivate you">
+    <meta property="og:url" content="">
+    
+    <title>Personalized Daily Quotes - AI-Powered Inspiration</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1 class="title">✨ Daily Quote Generator</h1>
+            <p class="subtitle">Personalized inspiration powered by AI</p>
+        </header>
+
+        <main class="main-content">
+            <!-- Name Input Form -->
+            <section class="input-section" id="inputSection">
+                <form class="quote-form" id="quoteForm" novalidate>
+                    <div class="input-group">
+                        <label for="nameInput" class="input-label">
+                            What's your name?
+                        </label>
+                        <input 
+                            type="text" 
+                            id="nameInput" 
+                            name="name"
+                            class="name-input" 
+                            placeholder="Enter your name"
+                            maxlength="50"
+                            autocomplete="given-name"
+                            aria-describedby="nameHelp nameError"
+                            required
+                        >
+                        <small id="nameHelp" class="input-help">
+                            We'll create a personalized quote just for you
+                        </small>
+                        <div id="nameError" class="error-message" role="alert" aria-live="polite"></div>
+                    </div>
+                    
+                    <button type="submit" class="submit-btn" id="submitBtn">
+                        <span class="btn-text">Get My Quote</span>
+                        <span class="btn-loading" aria-hidden="true">
+                            <span class="spinner"></span>
+                            Generating...
+                        </span>
+                    </button>
+                </form>
+            </section>
+
+            <!-- Quote Display -->
+            <section class="quote-section" id="quoteSection" aria-live="polite">
+                <div class="quote-container" id="quoteContainer">
+                    <blockquote class="quote-text" id="quoteText"></blockquote>
+                    <div class="quote-meta" id="quoteMeta">
+                        <span class="quote-for" id="quoteFor"></span>
+                        <span class="quote-model" id="quoteModel"></span>
+                    </div>
+                </div>
+                
+                <button class="new-quote-btn" id="newQuoteBtn" type="button">
+                    Get Another Quote
+                </button>
+            </section>
+
+            <!-- Error Display -->
+            <section class="error-section" id="errorSection" role="alert" aria-live="assertive">
+                <div class="error-container">
+                    <div class="error-icon">⚠️</div>
+                    <div class="error-content">
+                        <h3 class="error-title">Oops! Something went wrong</h3>
+                        <p class="error-text" id="errorText"></p>
+                        <button class="retry-btn" id="retryBtn" type="button">
+                            Try Again
+                        </button>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <footer class="footer">
+            <p class="footer-text">
+                Powered by <strong>Amazon Bedrock AI</strong> • 
+                <a href="https://github.com/shrivastavakapil2000/daily-coding-exercises" 
+                   target="_blank" 
+                   rel="noopener noreferrer"
+                   class="footer-link">
+                    View Source
+                </a>
+            </p>
+        </footer>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loadingOverlay" aria-hidden="true">
+        <div class="loading-content">
+            <div class="loading-spinner"></div>
+            <p class="loading-text">Crafting your personalized quote...</p>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
